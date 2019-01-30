@@ -172,20 +172,16 @@ public class NavLinkCreator : MonoBehaviour
 			return;
 
         string newEdgeKey = newEdge.GetKey();
-
-		foreach(KeyValuePair<string, string> kvp in edges)
-		{
-            if (edges.ContainsKey(newEdgeKey))
-            {
-                edges.Remove(newEdgeKey);
-                break;
-            }
-            else
-            {
-                edges.Add(newEdgeKey, newEdge);
-            }
+        if (edges.ContainsKey(newEdgeKey))
+        {
+            edges.Remove(newEdgeKey);
+            break;
         }
-	}
+        else
+        {
+            edges.Add(newEdgeKey, newEdge);
+        }
+    }
 	private void createLink(int agent, int area, Edge edge)
 	{
 		var pos = (edge.Start + edge.End) * 0.5f;
