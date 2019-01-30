@@ -30,53 +30,53 @@ public class NavLinkCreator : MonoBehaviour
 	{
 		public Vector3 Start;
 		public Vector3 End;
-		public Edge(Vector3 start,Vector3 end)
+		public Edge(Vector3 start, Vector3 end)
 		{
-            Start = start;
-            End = end;
+			Start = start;
+			End = end;
 
 
 
 
-        }		
-        public string GetKey()
-        {
-            Vector3 point1;
-            Vector3 point2;
+		}
+		public string GetKey()
+		{
+			Vector3 point1;
+			Vector3 point2;
 
-            if (Start.x < End.x)
-            {
-                point1 = Start;
-                point2 = End;
-            }
-            else if (Start.x > End.x)
-            {
-                point2 = Start;
-                point1 = End;
-            }
-            else if (Start.y < End.y)
-            {
-                point1 = Start;
-                point2 = End;
-            }
-            else if (Start.y > End.y)
-            {
-                point2 = Start;
-                point1 = End;
-            }
-            else if (Start.z < End.z)
-            {
-                point1 = Start;
-                point2 = End;
-            }
-            else
-            {
-                point2 = Start;
-                point1 = End;
-            }
-            return point1.ToString() + point2.ToString();
-        }            
-    }
+			if (Start.x < End.x)
+			{
+				point1 = Start;
+				point2 = End;
+			}
+			else if (Start.x > End.x)
+			{
+				point2 = Start;
+				point1 = End;
+			}
+			else if (Start.y < End.y)
+			{
+				point1 = Start;
+				point2 = End;
+			}
+			else if (Start.y > End.y)
+			{
+				point2 = Start;
+				point1 = End;
+			}
+			else if (Start.z < End.z)
+			{
+				point1 = Start;
+				point2 = End;
+			}
+			else
+			{
+				point2 = Start;
+				point1 = End;
+			}
+			return point1.ToString() + point2.ToString();
+		}
+	}
 
 	[ContextMenu("Create NavmeshLink")]
 	public void CreateNav()
@@ -105,27 +105,27 @@ public class NavLinkCreator : MonoBehaviour
 			ExecutionQueue.Clear();
 		}
 	}
-    Dictionary<int, Dictionary<string, Edge>> m_Edges;
-    private void calcuNavLink(object o)
+	Dictionary<int, Dictionary<string, Edge>> m_Edges;
+	private void calcuNavLink(object o)
 	{
 		IsStart = true;
-		// m_Edges = new Dictionary<string, Edge>();
+		m_Edges = new Dictionary<int, Dictionary<string, Edge>>();
 		NavMeshTriangulation triangles = (NavMeshTriangulation)o;
-		Logs = "Triangles:" + triangles.indices.Length + ", Areas:" + triangles.areas.Length 
+		Logs = "Triangles:" + triangles.indices.Length + ", Areas:" + triangles.areas.Length
 			+ ", Verticles" + triangles.vertices.Length + "\nCalculating outside edges..";
 		Thread.Sleep(8);
 		int times = 0;
-        
-        for (int i = 0; i < triangles.indices.Length - 1; i+=3)
+		Dictionary<string, Edge> edges;
+
+		for (int i = 0; i < triangles.indices.Length - 1; i += 3)
 		{
-            int area = triangles.areas[i / 3];
-            Dictionary<string, Edge> edges;
-            if (!m_Edges.TryGetValue(area, out edges))
-            {
-                edges = new Dictionary<string, Edge>();
-                m_Edges.Add(area, edges);
-            }            
-            addEdge(edges, triangles, i, i + 1);
+			int area = triangles.areas[i / 3];
+			if (!m_Edges.TryGetValue(area, out edges))
+			{
+				edges = new Dictionary<string, Edge>();
+				m_Edges.Add(area, edges);
+			}
+			addEdge(edges, triangles, i, i + 1);
 			addEdge(edges, triangles, i + 1, i + 2);
 			addEdge(edges, triangles, i + 2, i);
 			times += 3;
@@ -152,9 +152,9 @@ public class NavLinkCreator : MonoBehaviour
 					continue;
 				foreach (KeyValuePair<string, Edge> kvp in edges)
 				{
-                    Edge edge = kvp.Value;
+					Edge edge = kvp.Value;
 					createLink(sur.agentTypeID, sur.defaultArea, edge);
-					while(ExecutionQueue.Count>10)
+					while (ExecutionQueue.Count > 10)
 						Thread.Sleep(8);
 					if (!IsStart)
 						break;
@@ -178,23 +178,23 @@ public class NavLinkCreator : MonoBehaviour
 	/// <param name="triangles"></param>
 	/// <param name="i"></param>
 	/// <param name="j"></param>
-	private void addEdge(Dictionary<string, Edge> edges,NavMeshTriangulation triangles, int i,int j)
+	private void addEdge(Dictionary<string, Edge> edges, NavMeshTriangulation triangles, int i, int j)
 	{
 		var newEdge = new Edge(triangles.vertices[triangles.indices[i]],
 			triangles.vertices[triangles.indices[j]]);
 		if (!m_CalcuBounds.Contains(newEdge.Start) || !m_CalcuBounds.Contains(newEdge.End))
 			return;
 
-        string newEdgeKey = newEdge.GetKey();
-        if (edges.ContainsKey(newEdgeKey))
-        {
-            edges.Remove(newEdgeKey);            
-        }
-        else
-        {
-            edges.Add(newEdgeKey, newEdge);
-        }
-    }
+		string newEdgeKey = newEdge.GetKey();
+		if (edges.ContainsKey(newEdgeKey))
+		{
+			edges.Remove(newEdgeKey);
+		}
+		else
+		{
+			edges.Add(newEdgeKey, newEdge);
+		}
+	}
 	private void createLink(int agent, int area, Edge edge)
 	{
 		var pos = (edge.Start + edge.End) * 0.5f;
@@ -237,52 +237,52 @@ public class NavLinkCreator : MonoBehaviour
 		Vector3 startPos = data.StartPos;
 		Vector3 endPos = data.EndPos - Vector3.up * maxLinkHeightD * 1.1f;
 		Vector3 pos = data.Pos;
-		float wid=data.Wid;
+		float wid = data.Wid;
 		if (!tryHitNav(agent, area, startPos, endPos, pos, wid))
 		{//try upper
 			endPos = data.EndPos + Vector3.up * maxLinkHeightU * 1.1f;
 			tryHitNav(agent, area, startPos, endPos, pos, wid);
 		}
 	}
-	private bool tryHitNav(int agent, int area, Vector3 startPos, Vector3 endPos, Vector3 pos,float wid)
+	private bool tryHitNav(int agent, int area, Vector3 startPos, Vector3 endPos, Vector3 pos, float wid)
+	{
+		NavMeshHit navMeshHit = default;
+		RaycastHit raycastHit = new RaycastHit();
+		float mul = 0f;
+		var start = endPos;
+		start.y = Mathf.Max(startPos.y, endPos.y);
+		endPos.y = Mathf.Min(startPos.y, endPos.y);
+		Vector3 hor = endPos - startPos;
+		hor.y = 0;
+		hor = hor.normalized;
+		if (Physics.Raycast(start, Vector3.down, out raycastHit, start.y - endPos.y, raycastLayerMask.value,
+		QueryTriggerInteraction.Ignore))
 		{
-			NavMeshHit navMeshHit=default;
-			RaycastHit raycastHit = new RaycastHit();
-			float mul = 0f;
-			var start = endPos;
-			start.y = Mathf.Max(startPos.y, endPos.y);
-			endPos.y = Mathf.Min(startPos.y, endPos.y);
-			Vector3 hor = endPos - startPos;
-			hor.y = 0;
-			hor = hor.normalized;
-			if (Physics.Raycast(start, Vector3.down, out raycastHit,start.y - endPos.y, raycastLayerMask.value,
-			QueryTriggerInteraction.Ignore))
-			{
-				float agentR = NavMesh.GetSettingsByID(agent).agentRadius;
+			float agentR = NavMesh.GetSettingsByID(agent).agentRadius;
 
-				bool hit = false;
-				float delta = 0.1f / maxLinkWidth;
-				while (mul > -1f && NavMesh.SamplePosition(raycastHit.point + hor * mul, out navMeshHit, agentR, 1 << area))
-				{
-					mul -= delta;
-					hit = true;
-				}
-				if (hit)
-				{
-					mul += delta * (agentR / 0.1f);
-					hit=NavMesh.SamplePosition(raycastHit.point + hor * mul, out navMeshHit, agentR, 1 << area);
-				}
-				if (hit)
-				{
-					var obj = (GameObject)UnityEditor.PrefabUtility.InstantiatePrefab(linkPrefab.gameObject);
-					obj.transform.SetParent(transform);
-					obj.GetComponent<NavMeshLink_JumpPad>().Init(agent, UpperArea, navMeshHit.position, pos, wid);
-					return true;
-				}
+			bool hit = false;
+			float delta = 0.1f / maxLinkWidth;
+			while (mul > -1f && NavMesh.SamplePosition(raycastHit.point + hor * mul, out navMeshHit, agentR, 1 << area))
+			{
+				mul -= delta;
+				hit = true;
 			}
-			return false;
+			if (hit)
+			{
+				mul += delta * (agentR / 0.1f);
+				hit = NavMesh.SamplePosition(raycastHit.point + hor * mul, out navMeshHit, agentR, 1 << area);
+			}
+			if (hit)
+			{
+				var obj = (GameObject)UnityEditor.PrefabUtility.InstantiatePrefab(linkPrefab.gameObject);
+				obj.transform.SetParent(transform);
+				obj.GetComponent<NavMeshLink_JumpPad>().Init(agent, UpperArea, navMeshHit.position, pos, wid);
+				return true;
+			}
 		}
+		return false;
 	}
+}
 #if UNITY_EDITOR
 
 [UnityEditor.CustomEditor(typeof(NavLinkCreator))]
@@ -311,7 +311,7 @@ public class NavLinkCreator_Editor : UnityEditor.Editor
 	}
 	public override void OnInspectorGUI()
 	{
-        DrawDefaultInspector();
+		DrawDefaultInspector();
 		if (GUILayout.Button("Generate"))
 		{
 			m_Target.CreateNav();
