@@ -7,7 +7,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.AI;
 using System.Threading;
-using Cieo.Game.Core.Utils;
+// using Cieo.Game.Core.Utils;
 
 public class NavLinkCreator : MonoBehaviour
 {
@@ -30,45 +30,51 @@ public class NavLinkCreator : MonoBehaviour
 	{
 		public Vector3 Start;
 		public Vector3 End;
-		public Edge(Vector3 point1,Vector3 point2)
+		public Edge(Vector3 start,Vector3 end)
 		{
-            if (point1.x < point2.x)
-            {
-                Start = point1;
-                End = point2;
-            }
-            else if (point1.x > point2.x)
-            {
-                Start = point2;
-                End = point1;
-            }
-            else if (point1.y < point2.y)
-            {
-                Start = point1;
-                End = point2;
-            }
-            else if (point1.y > point2.y)
-            {
-                Start = point2;
-                End = point1;
-            }
-            else if (point1.z < point2.z)
-            {
-                Start = point1;
-                End = point2;
-            }
-            else
-            {
-                Start = point2;
-                End = point1;
-            }
+            Start = start;
+            End = end;
+
 
 
 
         }		
-        public int GetKey()
+        public string GetKey()
         {
-            Start.ToString() + End.ToString();
+            Vector3 point1;
+            Vector3 point2;
+
+            if (Start.x < End.x)
+            {
+                point1 = Start;
+                point2 = End;
+            }
+            else if (Start.x > End.x)
+            {
+                point2 = Start;
+                point1 = End;
+            }
+            else if (Start.y < End.y)
+            {
+                point1 = Start;
+                point2 = End;
+            }
+            else if (Start.y > End.y)
+            {
+                point2 = Start;
+                point1 = End;
+            }
+            else if (Start.z < End.z)
+            {
+                point1 = Start;
+                point2 = End;
+            }
+            else
+            {
+                point2 = Start;
+                point1 = End;
+            }
+            return point1.ToString() + point2.ToString();
         }            
     }
 
@@ -116,7 +122,7 @@ public class NavLinkCreator : MonoBehaviour
             Dictionary<string, Edge> edges;
             if (!m_Edges.TryGetValue(area, out edges))
             {
-                edges = Dictionary<string, Edge>();
+                edges = new Dictionary<string, Edge>();
                 m_Edges.Add(area, edges);
             }            
             addEdge(edges, triangles, i, i + 1);
@@ -182,8 +188,7 @@ public class NavLinkCreator : MonoBehaviour
         string newEdgeKey = newEdge.GetKey();
         if (edges.ContainsKey(newEdgeKey))
         {
-            edges.Remove(newEdgeKey);
-            break;
+            edges.Remove(newEdgeKey);            
         }
         else
         {
