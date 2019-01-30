@@ -99,8 +99,8 @@ public class NavLinkCreator : MonoBehaviour
 			ExecutionQueue.Clear();
 		}
 	}
-	Dictionary<string, Edge> m_Edges;
-	private void calcuNavLink(object o)
+    Dictionary<int, Dictionary<string, Edge>> m_Edges;
+    private void calcuNavLink(object o)
 	{
 		IsStart = true;
 		// m_Edges = new Dictionary<string, Edge>();
@@ -109,10 +109,17 @@ public class NavLinkCreator : MonoBehaviour
 			+ ", Verticles" + triangles.vertices.Length + "\nCalculating outside edges..";
 		Thread.Sleep(8);
 		int times = 0;
-        Dictionary<string, Edge> edges;
+        
         for (int i = 0; i < triangles.indices.Length - 1; i+=3)
 		{
-			addEdge(edges, triangles, i, i + 1);
+            int area = triangles.areas[i / 3];
+            Dictionary<string, Edge> edges;
+            if (!m_Edges.TryGetValue(area, out edges))
+            {
+                edges = Dictionary<string, Edge>();
+                m_Edges.Add(area, edges);
+            }            
+            addEdge(edges, triangles, i, i + 1);
 			addEdge(edges, triangles, i + 1, i + 2);
 			addEdge(edges, triangles, i + 2, i);
 			times += 3;
@@ -137,8 +144,9 @@ public class NavLinkCreator : MonoBehaviour
 				// List<Edge> edges;
 				if (!m_Edges.TryGetValue(sur.defaultArea, out edges))
 					continue;
-				foreach (var edge in edges)
+				foreach (KeyValuePair<string, Edge> kvp in edges)
 				{
+                    Edge edge = kvp.Value;
 					createLink(sur.agentTypeID, sur.defaultArea, edge);
 					while(ExecutionQueue.Count>10)
 						Thread.Sleep(8);
