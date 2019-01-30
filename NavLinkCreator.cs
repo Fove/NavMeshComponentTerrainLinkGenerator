@@ -30,51 +30,26 @@ public class NavLinkCreator : MonoBehaviour
 	{
 		public Vector3 Start;
 		public Vector3 End;
+		public key;
 		public Edge(Vector3 start, Vector3 end)
 		{
 			Start = start;
 			End = end;
-
-
-
-
-		}
-		public string GetKey()
-		{
-			Vector3 point1;
-			Vector3 point2;
-
-			if (Start.x < End.x)
+			string key1 = Start.ToString() + End.ToString();
+			string key2 = End.ToString() + Start.ToString();
+			int compare = String.Compare(key1, key2);
+			if (compare < 0)
 			{
-				point1 = Start;
-				point2 = End;
-			}
-			else if (Start.x > End.x)
-			{
-				point2 = Start;
-				point1 = End;
-			}
-			else if (Start.y < End.y)
-			{
-				point1 = Start;
-				point2 = End;
-			}
-			else if (Start.y > End.y)
-			{
-				point2 = Start;
-				point1 = End;
-			}
-			else if (Start.z < End.z)
-			{
-				point1 = Start;
-				point2 = End;
+				key = key1;
 			}
 			else
 			{
-				point2 = Start;
-				point1 = End;
+				key = key2;
 			}
-			return point1.ToString() + point2.ToString();
+		}
+		public string GetKey()
+		{			
+			return key;
 		}
 	}
 
