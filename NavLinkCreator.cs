@@ -34,10 +34,6 @@ public class NavLinkCreator : MonoBehaviour
 		{
 			Start = start;
 			End = end;
-
-
-
-
 		}
 		public string GetKey()
 		{
@@ -84,8 +80,7 @@ public class NavLinkCreator : MonoBehaviour
 		Debug.Log("Getting Triangles..");
 		m_MaxDis = Mathf.Sqrt(maxLinkWidth * maxLinkWidth + maxLinkHeightU * maxLinkHeightU);
 		ExecutionQueue.Clear();
-		m_CalcuBounds = new Bounds(new Vector3(float.MinValue, float.MinValue, float.MinValue),
-			new Vector3(float.MaxValue, float.MaxValue, float.MaxValue));
+		m_CalcuBounds = default;
 		var box = GetComponent<BoxCollider>();
 		if (box)
 		{
@@ -182,8 +177,9 @@ public class NavLinkCreator : MonoBehaviour
 	{
 		var newEdge = new Edge(triangles.vertices[triangles.indices[i]],
 			triangles.vertices[triangles.indices[j]]);
-		if (!m_CalcuBounds.Contains(newEdge.Start) || !m_CalcuBounds.Contains(newEdge.End))
-			return;
+		if(m_CalcuBounds!=default)
+			if (!m_CalcuBounds.Contains(newEdge.Start) || !m_CalcuBounds.Contains(newEdge.End))
+				return;
 
 		string newEdgeKey = newEdge.GetKey();
 		if (edges.ContainsKey(newEdgeKey))
