@@ -30,16 +30,47 @@ public class NavLinkCreator : MonoBehaviour
 	{
 		public Vector3 Start;
 		public Vector3 End;
-		public Edge(Vector3 start,Vector3 end)
+		public Edge(Vector3 point1,Vector3 point2)
 		{
-			Start = start;
-			End = end;
-		}
-		public override int GetHashCode()
-		{
-			return Start.GetHashCode() ^ End.GetHashCode();
-		}
-	}
+            if (point1.x < point2.x)
+            {
+                Start = point1;
+                End = point2;
+            }
+            else if (point1.x > point2.x)
+            {
+                Start = point2;
+                End = point1;
+            }
+            else if (point1.y < point2.y)
+            {
+                Start = point1;
+                End = point2;
+            }
+            else if (point1.y > point2.y)
+            {
+                Start = point2;
+                End = point1;
+            }
+            else if (point1.z < point2.z)
+            {
+                Start = point1;
+                End = point2;
+            }
+            else
+            {
+                Start = point2;
+                End = point1;
+            }
+
+
+
+        }		
+        public int GetKey()
+        {
+            Start.ToString() + End.ToString();
+        }            
+    }
 
 	[ContextMenu("Create NavmeshLink")]
 	public void CreateNav()
@@ -68,25 +99,19 @@ public class NavLinkCreator : MonoBehaviour
 			ExecutionQueue.Clear();
 		}
 	}
-	Dictionary<int, List<Edge>> m_Edges;
+	Dictionary<string, Edge> m_Edges;
 	private void calcuNavLink(object o)
 	{
 		IsStart = true;
-		m_Edges = new Dictionary<int, List<Edge>>();
+		// m_Edges = new Dictionary<string, Edge>();
 		NavMeshTriangulation triangles = (NavMeshTriangulation)o;
 		Logs = "Triangles:" + triangles.indices.Length + ", Areas:" + triangles.areas.Length 
 			+ ", Verticles" + triangles.vertices.Length + "\nCalculating outside edges..";
 		Thread.Sleep(8);
 		int times = 0;
-		for (int i = 0; i < triangles.indices.Length - 1; i+=3)
+        Dictionary<string, Edge> edges;
+        for (int i = 0; i < triangles.indices.Length - 1; i+=3)
 		{
-			int area = triangles.areas[i/3];
-			List <Edge> edges;
-			if (!m_Edges.TryGetValue(area, out edges))
-			{
-				edges = new List<Edge>();
-				m_Edges.Add(area, edges);
-			}
 			addEdge(edges, triangles, i, i + 1);
 			addEdge(edges, triangles, i + 1, i + 2);
 			addEdge(edges, triangles, i + 2, i);
@@ -109,7 +134,7 @@ public class NavLinkCreator : MonoBehaviour
 			var surfaces = NavMeshSurface.activeSurfaces;
 			foreach (var sur in surfaces)
 			{
-				List<Edge> edges;
+				// List<Edge> edges;
 				if (!m_Edges.TryGetValue(sur.defaultArea, out edges))
 					continue;
 				foreach (var edge in edges)
@@ -139,39 +164,27 @@ public class NavLinkCreator : MonoBehaviour
 	/// <param name="triangles"></param>
 	/// <param name="i"></param>
 	/// <param name="j"></param>
-	private void addEdge(List<Edge> edges,NavMeshTriangulation triangles, int i,int j)
+	private void addEdge(Dictionary<string, Edge> edges,NavMeshTriangulation triangles, int i,int j)
 	{
 		var newEdge = new Edge(triangles.vertices[triangles.indices[i]],
 			triangles.vertices[triangles.indices[j]]);
 		if (!m_CalcuBounds.Contains(newEdge.Start) || !m_CalcuBounds.Contains(newEdge.End))
 			return;
-		int hash = newEdge.GetHashCode();
-		Edge outEdge = default;
-		bool repeat = false;
-		foreach(var e in edges)
+
+        string newEdgeKey = newEdge.GetKey();
+
+		foreach(KeyValuePair<string, string> kvp in edges)
 		{
-			if (e.Start == newEdge.Start && e.End == newEdge.End)
-			{
-				repeat = true;
-				outEdge = e;
-				break;
-			}
-			if (e.Start == newEdge.End && e.End == newEdge.Start)
-			{
-				repeat = true;
-				outEdge = e;
-				break;
-			}
-		}
-		if (repeat)
-		{
-			edges.Remove(outEdge);
-			Logs = string.Format("{0},{1}=={2},{3}", newEdge.Start, newEdge.End, outEdge.Start, outEdge.End);
-		}
-		else
-		{
-			edges.Add(newEdge);
-		}
+            if (edges.ContainsKey(newEdgeKey))
+            {
+                edges.Remove(newEdgeKey);
+                break;
+            }
+            else
+            {
+                edges.Add(newEdgeKey, newEdge);
+            }
+        }
 	}
 	private void createLink(int agent, int area, Edge edge)
 	{
